@@ -7,7 +7,8 @@ extends GaeaGenerator2D
 ## @tutorial(Generators): https://benjatk.github.io/Gaea/#/generators/
 ## @tutorial(CellularGenerator): https://benjatk.github.io/Gaea/#/generators/cellular
 
-
+## Decides whether any tile coordinates under the noise density threshold should be cleared.
+@export var clear_under_threshold: bool = false
 @export var settings: CellularGeneratorSettings
 
 
@@ -48,9 +49,9 @@ func _set_noise() -> void:
 	for x in range(settings.world_size.x):
 		for y in range(settings.world_size.y):
 			if randf() > settings.noise_density:
-				grid.set_valuexy(x, y, settings.tile)
-			else:
-				grid.set_valuexy(x, y, null)
+				grid.set_valuexy(x, y, settings.tile, settings.tile.tilemap_layer)
+			elif clear_under_threshold:
+				grid.set_valuexy(x, y, null, settings.tile.tilemap_layer)
 
 
 func _smooth() -> void:

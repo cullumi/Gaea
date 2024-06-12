@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TilemapTileInfo" load_steps=2 format=3 uid="uid://de1ueg2kl7fra"]
+
+[ext_resource type="Script" path="res://addons/gaea/tile_info/tilemap_tile_info.gd" id="1_i4l8t"]
+
+[resource]
+resource_name = "Sand"
+script = ExtResource("1_i4l8t")
+type = 1
+tilemap_layer = 0
+terrain_set = 0
+terrain = 1
+id = "Sand"
+layer = 0

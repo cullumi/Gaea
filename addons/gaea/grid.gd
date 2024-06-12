@@ -60,9 +60,6 @@ func get_grid() -> Dictionary:
 
 ### Cells ###
 
-
-
-
 ## Returns an [Array] of all cells in the grid.
 func get_cells(layer: int) -> Array:
 	if not has_layer(layer):

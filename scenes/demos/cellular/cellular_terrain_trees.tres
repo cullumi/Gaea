@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TilemapTileInfo" load_steps=2 format=3 uid="uid://bh3lx4joock46"]
+
+[ext_resource type="Script" path="res://addons/gaea/tile_info/tilemap_tile_info.gd" id="1_50x5y"]
+
+[resource]
+resource_name = "Trees"
+script = ExtResource("1_50x5y")
+type = 1
+tilemap_layer = 1
+terrain_set = 0
+terrain = 2
+id = "Trees"
+layer = 0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TilemapTileInfo" load_steps=2 format=3 uid="uid://0pep631g2h4g"]
+
+[ext_resource type="Script" path="res://addons/gaea/tile_info/tilemap_tile_info.gd" id="1_sbjnp"]
+
+[resource]
+resource_name = "Grass"
+script = ExtResource("1_sbjnp")
+type = 1
+tilemap_layer = 0
+terrain_set = 0
+terrain = 0
+id = "Grass"
+layer = 0
