@@ -26,6 +26,11 @@ var update_rate: int = 0
 ## If set to true, will prioritize chunks closer to the [param actor].
 @export var load_closest_chunks_first: bool = true
 
+## Emitted when [method _update_loading] starts a major section.
+signal loading_section_started(step_count:int, section_name:String)
+## Emitted when [method _update_loading] makes progress.
+signal loading_progressed(steps:int)
+
 var _last_run: int = 0
 var _last_position: Vector3i
 var required_chunks: PackedVector3Array
@@ -34,19 +39,19 @@ var required_chunks: PackedVector3Array
 func _ready() -> void:
 	if Engine.is_editor_hint() or not is_instance_valid(generator):
 		return
-
+	
 	await get_tree().process_frame
-
+	
 	generator.erase()
 	if load_on_ready:
 		_update_loading(_get_actors_position())
 
 
 func _process(delta: float) -> void:
-
+	
 	if Engine.is_editor_hint() or not is_instance_valid(generator):
 		return
-
+	
 	var current_time = Time.get_ticks_msec()
 	if current_time - _last_run > update_rate:
 		# todo make check loading
@@ -57,10 +62,10 @@ func _process(delta: float) -> void:
 # checks if chunk loading is neccessary and executes if true
 func _try_loading() -> void:
 	var actor_position: Vector3i = actor.global_position
-
+	
 	if actor_position == _last_position and required_chunks.is_empty():
 		return
-
+	
 	var _start_time = Time.get_ticks_msec()
 	_last_position = actor_position
 	_update_loading(_get_actors_position())
@@ -68,35 +73,45 @@ func _try_loading() -> void:
 
 # loads needed chunks around the given position
 func _update_loading(actor_position: Vector3i) -> void:
-
+	
 	if generator == null:
 		push_error("Chunk loading failed because generator property not set!")
 		return
-
+	
 	required_chunks = _get_required_chunks(actor_position)
-
+	
 	# remove old chunks
 	if unload_chunks:
 		var loaded_chunks: PackedVector3Array = PackedVector3Array(generator.generated_chunks)
+		emit_section(loaded_chunks.size(), "Unloading Chunks")
 		for i in range(loaded_chunks.size() - 1, -1, -1):
 			var loaded: Vector3 = loaded_chunks[i]
 			if not (loaded in required_chunks):
 				generator.unload_chunk(loaded)
-
-
+			emit_progress()
+	
 	# load new chunks
+	emit_section(required_chunks.size(), "Loading Chunks")
 	for required in required_chunks:
 		if not generator.has_chunk(required):
 			generator.generate_chunk(required)
+		emit_progress()
+
+
+func emit_section(step_count:int, section_name:String):
+	(func(): loading_section_started.emit(step_count, section_name)).call_deferred()
+
+func emit_progress(steps:int=1):
+	(func(): loading_progressed.emit(steps)).call_deferred()
 
 
 func _get_actors_position() -> Vector3i:
 	# getting actors positions
 	var actor_position := Vector3i.ZERO
 	if actor != null: actor_position = actor.global_position.round()
-
+	
 	var tile_position: Vector3i = actor_position / generator.tile_size
-
+	
 	var chunk_position := Vector3i(
 		roundi(float(tile_position.x) / generator.chunk_size.x),
 		roundi(float(tile_position.y) / generator.chunk_size.y),
@@ -108,7 +123,7 @@ func _get_actors_position() -> Vector3i:
 
 func _get_required_chunks(actor_position: Vector3) -> PackedVector3Array:
 	var chunks: Array[Vector3] = []
-
+	
 	var x_range = range(
 		actor_position.x - abs(loading_radius).x,
 		actor_position.x + abs(loading_radius).x + 1
@@ -121,12 +136,12 @@ func _get_required_chunks(actor_position: Vector3) -> PackedVector3Array:
 		actor_position.z - abs(loading_radius).z,
 		actor_position.z + abs(loading_radius).z + 1
 	)
-
+	
 	for x in x_range:
 		for y in y_range:
 			for z in z_range:
 				chunks.append(Vector3(x, y, z))
-
+	
 	if load_closest_chunks_first:
 		chunks.sort_custom(func(chunk1: Vector3, chunk2: Vector3): return actor_position.distance_squared_to(chunk1) < actor_position.distance_squared_to(chunk2))
 	return PackedVector3Array(chunks)
@@ -134,8 +149,8 @@ func _get_required_chunks(actor_position: Vector3) -> PackedVector3Array:
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings : PackedStringArray
-
+	
 	if not is_instance_valid(generator):
 		warnings.append("Generator is required!")
-
+	
 	return warnings
