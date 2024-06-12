@@ -45,24 +45,29 @@ func generate(starting_grid: GaeaGrid = null) -> void:
 
 
 func _set_noise() -> void:
+	emit_section(settings.world_size.x * settings.world_size.y, "Applying Noise")
 	for x in range(settings.world_size.x):
 		for y in range(settings.world_size.y):
 			if randf() > settings.noise_density:
 				grid.set_valuexy(x, y, settings.tile)
 			else:
 				grid.set_valuexy(x, y, null)
+			emit_progress()
 
 
 func _smooth() -> void:
+	var cells = grid.get_cells(settings.tile.layer)
+	emit_section(settings.smooth_iterations * cells.size(), "Smoothing")
 	for i in settings.smooth_iterations:
 		var _temp_grid: GaeaGrid = grid.clone()
-
+		
 		for cell in grid.get_cells(settings.tile.layer):
 			var dead_neighbors_count: int = grid.get_amount_of_empty_neighbors(cell, settings.tile.layer)
 			if grid.get_value(cell, settings.tile.layer) != null and dead_neighbors_count > settings.max_floor_empty_neighbors:
 				_temp_grid.set_value(cell, null)
 			elif grid.get_value(cell, settings.tile.layer) == null and dead_neighbors_count <= settings.min_empty_neighbors:
 				_temp_grid.set_value(cell, settings.tile)
+			emit_progress()
 
 		grid = _temp_grid
 
