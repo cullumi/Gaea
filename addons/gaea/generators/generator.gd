@@ -12,6 +12,10 @@ signal grid_updated
 signal generation_started
 ## Emitted when [method generate] successfully finished.
 signal generation_finished
+## Emitted when [method generate] starts a major section of it's process.
+signal generation_section_started(step_count:int, section_name:String)
+## Emitted when [method generate] makes progress.
+signal generation_progressed(steps:int)
 
 
 ## If [code]true[/code], allows for generating a preview of the generation
