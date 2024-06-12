@@ -12,7 +12,7 @@ signal grid_updated
 signal generation_started
 ## Emitted when [method generate] successfully finished.
 signal generation_finished
-## Emitted when [method generate] starts a major section of it's process.
+## Emitted when [method generate] starts a major section.
 signal generation_section_started(step_count:int, section_name:String)
 ## Emitted when [method generate] makes progress.
 signal generation_progressed(steps:int)
@@ -80,11 +80,12 @@ func get_seed() -> int:
 ### Modifiers ###
 
 func _apply_modifiers(modifiers) -> void:
+	emit_section(modifiers.size(), "Applying Modifiers")
 	for modifier in modifiers:
-		if not (modifier is Modifier) or modifier.enabled == false:
-			continue
+		if (modifier is Modifier) and modifier.enabled:
+			modifier.apply(grid, self)
+		emit_progress()
 
-		modifier.apply(grid, self)
 
 
 func _on_generation_started() -> void:
@@ -97,3 +98,9 @@ func _on_generation_started() -> void:
 func _validate_property(property: Dictionary) -> void:
 	if property.name == "seed" and random_seed:
 		property.usage = PROPERTY_USAGE_NONE
+
+func emit_section(step_count:int, section_name:String):
+	(func(): generation_section_started.emit(step_count, section_name)).call_deferred()
+
+func emit_progress(steps:int=1):
+	(func(): generation_progressed.emit(steps)).call_deferred()
