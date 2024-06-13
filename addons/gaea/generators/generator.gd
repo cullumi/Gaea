@@ -62,7 +62,8 @@ func generate(starting_grid: GaeaGrid = null) -> void:
 func erase() -> void:
 	if grid != null:
 		grid.clear()
-		grid_updated.emit()
+		if OS.get_thread_caller_id() == OS.get_main_thread_id():
+			grid_updated.emit() # Crashes godot when deferred!?
 
 
 func get_grid() -> GaeaGrid:
