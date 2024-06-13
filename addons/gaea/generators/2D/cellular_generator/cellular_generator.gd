@@ -46,13 +46,17 @@ func generate(starting_grid: GaeaGrid = null) -> void:
 
 func _set_noise() -> void:
 	emit_section(settings.world_size.x * settings.world_size.y, "Applying Noise")
+	var item_count:int = 0
+	var row_count:int = 0
 	for x in range(settings.world_size.x):
 		for y in range(settings.world_size.y):
 			if randf() > settings.noise_density:
 				grid.set_valuexy(x, y, settings.tile)
 			else:
 				grid.set_valuexy(x, y, null)
-			emit_progress()
+			emit_progress((settings.world_size.y * x) + (y + 1))
+		emit_progress(settings.world_size.y * (x+1))
+	emit_progress(settings.world_size.x * settings.world_size.y)
 
 
 func _smooth() -> void:
@@ -61,15 +65,19 @@ func _smooth() -> void:
 	for i in settings.smooth_iterations:
 		var _temp_grid: GaeaGrid = grid.clone()
 		
-		for cell in grid.get_cells(settings.tile.layer):
+		var c:int = 0
+		for cell in cells:
 			var dead_neighbors_count: int = grid.get_amount_of_empty_neighbors(cell, settings.tile.layer)
 			if grid.get_value(cell, settings.tile.layer) != null and dead_neighbors_count > settings.max_floor_empty_neighbors:
 				_temp_grid.set_value(cell, null)
 			elif grid.get_value(cell, settings.tile.layer) == null and dead_neighbors_count <= settings.min_empty_neighbors:
 				_temp_grid.set_value(cell, settings.tile)
-			emit_progress()
+			c += 1
+			emit_progress((cells.size() * i) + c)
+		emit_progress(cells.size() * (i+1))
 
 		grid = _temp_grid
+	emit_progress(settings.smooth_iterations * cells.size())
 
 	grid.erase_invalid()
 
